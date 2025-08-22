@@ -1,0 +1,110 @@
+# ZK-Lease Service Configuration
+server:
+  host: "0.0.0.0"
+  port: 50052
+  workers: 4
+
+database:
+  url: "postgresql://wohnfair:wohnfair_pass@postgres:5432/wohnfair"
+  max_connections: 10
+  min_connections: 2
+  connect_timeout: 30
+  idle_timeout: 300
+  max_lifetime: 3600
+
+redis:
+  url: "redis://:redis_pass@redis:6379"
+  pool_size: 5
+  timeout: 5
+
+prover:
+  circuit_path: "/app/circuits"
+  proving_key_path: "/app/keys/proving.key"
+  max_proof_size: 1048576  # 1MB
+  timeout: 300  # 5 minutes
+
+verifier:
+  verifying_key_path: "/app/keys/verifying.key"
+  max_verification_time: 60  # 1 minute
+
+metrics:
+  enabled: true
+  port: 9091
+  path: "/metrics"
+
+tracing:
+  enabled: true
+  jaeger_endpoint: "http://jaeger:14268/api/traces"
+  sample_rate: 0.1
+
+# Circuit-specific configurations
+circuits:
+  housing_eligibility:
+    name: "housing_eligibility"
+    version: "1.0.0"
+    constraints: 10000
+    public_inputs: 5
+    private_inputs: 20
+  
+  income_verification:
+    name: "income_verification"
+    version: "1.0.0"
+    constraints: 5000
+    public_inputs: 3
+    private_inputs: 15
+  
+  residency_proof:
+    name: "residency_proof"
+    version: "1.0.0"
+    constraints: 3000
+    public_inputs: 2
+    private_inputs: 10
+
+# Proof system configurations
+proof_systems:
+  halo2:
+    enabled: true
+    curve: "bn256"
+    security_level: 128
+  
+  plonk:
+    enabled: true
+    curve: "bn256"
+    security_level: 128
+  
+  groth16:
+    enabled: false
+    curve: "bn256"
+    security_level: 128
+
+# Performance tuning
+performance:
+  max_concurrent_proofs: 4
+  proof_cache_size: 100
+  verification_cache_size: 200
+  batch_size: 10
+
+# Security settings
+security:
+  key_rotation_interval: 86400  # 24 hours
+  max_proof_age: 3600  # 1 hour
+  require_freshness: true
+  allowed_circuits: ["housing_eligibility", "income_verification", "residency_proof"]
+
+# Logging configuration
+logging:
+  level: "info"
+  format: "json"
+  output: "stdout"
+  file:
+    enabled: false
+    path: "/app/logs/zk-lease.log"
+    max_size: "100MB"
+    max_files: 5
+
+# Development settings
+development:
+  debug: false
+  mock_proofs: false
+  hot_reload: false
+  profiling: false

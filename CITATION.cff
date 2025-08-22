@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: "WohnFair: Fairness-preserving, kryptographisch überprüfbare Wohnungsvergabe"
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "WohnFair"
+    given-names: "Team"
+    email: "team@wohnfair.org"
+    website: "https://wohnfair.org"
+repository-code: "https://github.com/wohnfair/wohnfair"
+url: "https://wohnfair.org"
+abstract: "A production-grade, cryptographically verifiable housing allocation system implementing α-fair scheduling algorithms with zero-knowledge proofs for privacy-preserving verification."
+keywords:
+  - "housing allocation"
+  - "fairness algorithms"
+  - "zero-knowledge proofs"
+  - "cryptography"
+  - "distributed systems"
+license: MIT
+version: 0.1.0
+date-released: 2024-12-19
+repository-artifact: "https://github.com/wohnfair/wohnfair/releases"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.12345678"
+  - type: url
+    value: "https://wohnfair.org"

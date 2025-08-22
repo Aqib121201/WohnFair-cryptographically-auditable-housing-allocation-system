@@ -1,0 +1,138 @@
+# FairRent Service Configuration
+
+# Service settings
+service:
+  name: "fairrent"
+  version: "0.1.0"
+  port: 50051
+  host: "0.0.0.0"
+
+# Logging configuration
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json" # json, console
+  output: "stdout" # stdout, stderr, file
+
+# Scheduler configuration
+scheduler:
+  # α-fairness parameter (higher = more fair, lower = more efficient)
+  alpha: 2.0
+  
+  # Maximum wait time before starvation protection kicks in
+  max_wait_time: "24h"
+  
+  # Group weights for fairness calculations
+  group_weights:
+    USER_GROUP_REFUGEE: 1.5      # Higher priority for refugees
+    USER_GROUP_DISABLED: 1.3     # Higher priority for disabled
+    USER_GROUP_SENIOR: 1.2       # Higher priority for seniors
+    USER_GROUP_LOW_INCOME: 1.1   # Slightly higher for low income
+    USER_GROUP_STUDENT: 1.0      # Baseline priority
+    USER_GROUP_FAMILY: 1.0       # Baseline priority
+    USER_GROUP_SINGLE: 0.9       # Slightly lower for single
+    USER_GROUP_MIDDLE_INCOME: 0.8 # Lower for middle income
+    USER_GROUP_HIGH_INCOME: 0.7   # Lower for high income
+
+# Queue configuration
+queue:
+  # Maximum number of tickets in memory
+  max_size: 10000
+  
+  # Priority queue implementation
+  implementation: "heap" # heap, list, tree
+  
+  # Persistence settings
+  persistence:
+    enabled: false
+    type: "redis" # redis, postgres, file
+    sync_interval: "5s"
+
+# Metrics configuration
+metrics:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+  
+  # Custom metrics
+  custom:
+    enabled: true
+    collection_interval: "30s"
+    retention_period: "24h"
+
+# Telemetry configuration
+telemetry:
+  # OpenTelemetry tracing
+  tracing:
+    enabled: true
+    exporter: "jaeger" # jaeger, zipkin, otlp
+    endpoint: "http://localhost:14268/api/traces"
+    sample_rate: 1.0
+  
+  # Metrics export
+  metrics:
+    enabled: true
+    exporter: "prometheus" # prometheus, otlp
+    endpoint: "http://localhost:9090"
+
+# Health check configuration
+health:
+  enabled: true
+  port: 8080
+  path: "/healthz"
+  check_interval: "30s"
+  timeout: "5s"
+
+# Performance tuning
+performance:
+  # Worker pool settings
+  workers:
+    min: 2
+    max: 10
+    queue_size: 100
+  
+  # Batch processing
+  batch:
+    enabled: false
+    size: 100
+    timeout: "1s"
+  
+  # Rate limiting
+  rate_limit:
+    enabled: false
+    requests_per_second: 1000
+    burst_size: 100
+
+# Security configuration
+security:
+  # Authentication
+  auth:
+    enabled: false
+    type: "jwt" # jwt, oauth2, none
+  
+  # Authorization
+  authorization:
+    enabled: false
+    policy_file: "policies/rbac.yaml"
+  
+  # Input validation
+  validation:
+    enabled: true
+    strict: false
+
+# Development settings
+development:
+  # Debug mode
+  debug: false
+  
+  # Mock data
+  mock_data: false
+  
+  # Hot reload
+  hot_reload: false
+  
+  # Profiling
+  profiling:
+    enabled: false
+    port: 6060

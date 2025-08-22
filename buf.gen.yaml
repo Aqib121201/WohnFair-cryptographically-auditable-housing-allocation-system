@@ -1,0 +1,48 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/wohnfair/wohnfair
+    override:
+      - buf.build/wohnfair/wohnfair
+        go_package_prefix: github.com/wohnfair/wohnfair
+plugins:
+  # Go gRPC server
+  - name: go
+    out: services
+    opt: paths=source_relative
+  - name: go-grpc
+    out: services
+    opt: paths=source_relative
+  - name: go-grpc-gateway
+    out: services
+    opt: paths=source_relative
+  
+  # TypeScript/JavaScript (Connect-Web)
+  - name: es
+    out: frontend/src/gen
+    opt: target=ts,import_style=typescript
+  - name: connect-es
+    out: frontend/src/gen
+    opt: target=ts
+  
+  # Python
+  - name: python
+    out: services/ml/gen
+  - name: grpcio-tools
+    out: services/ml/gen
+  
+  # Documentation
+  - name: doc
+    out: docs/api
+  - name: buf-breaking
+    out: ./
+    opt: --error-format=json
+  
+  # Validation
+  - name: validate
+    out: services
+    opt: lang=go
+  - name: validate
+    out: frontend/src/gen
+    opt: lang=ts

@@ -1,0 +1,264 @@
+# WohnFair ML Service Configuration
+
+# Service settings
+service:
+  name: "wohnfair-ml"
+  version: "0.1.0"
+  debug: false
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+
+# Database settings
+database:
+  url: "postgresql://wohnfair:wohnfair_pass@postgres:5432/wohnfair"
+  pool_size: 10
+  max_overflow: 20
+  echo: false
+
+# Redis settings
+redis:
+  url: "redis://:redis_pass@redis:6379"
+  pool_size: 5
+  timeout: 5
+
+# ClickHouse settings
+clickhouse:
+  host: "clickhouse"
+  port: 8123
+  database: "wohnfair_analytics"
+  username: "wohnfair"
+  password: "wohnfair_pass"
+  secure: false
+
+# MinIO settings
+minio:
+  endpoint: "minio:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  bucket: "wohnfair-ml"
+  secure: false
+
+# Model settings
+model:
+  # HSBCox model settings
+  hsbcx_alpha: 0.05
+  hsbcx_max_iter: 1000
+  hsbcx_tol: 1e-6
+  
+  # XGBoost settings
+  xgb_n_estimators: 100
+  xgb_max_depth: 6
+  xgb_learning_rate: 0.1
+  xgb_subsample: 0.8
+  xgb_colsample_bytree: 0.8
+  
+  # Model storage
+  model_dir: "/app/models"
+  artifact_dir: "/app/artifacts"
+  
+  # Model versioning
+  version_format: "v{major}.{minor}.{patch}"
+  auto_version: true
+
+# Training settings
+training:
+  # Data settings
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  random_state: 42
+  
+  # Cross-validation
+  cv_folds: 5
+  cv_strategy: "stratified"
+  
+  # Hyperparameter tuning
+  tune_enabled: true
+  tune_trials: 100
+  tune_timeout: 3600
+  
+  # Early stopping
+  early_stopping: true
+  patience: 10
+  
+  # Distributed training
+  distributed: false
+  num_workers: 4
+
+# Evaluation settings
+evaluation:
+  # Metrics
+  primary_metric: "c_index"
+  secondary_metrics:
+    - "brier_score"
+    - "calibration_error"
+    - "discrimination_index"
+  
+  # Thresholds
+  min_c_index: 0.7
+  max_brier_score: 0.25
+  
+  # Statistical tests
+  statistical_tests: true
+  confidence_level: 0.95
+  
+  # Fairness metrics
+  fairness_metrics:
+    - "demographic_parity"
+    - "equalized_odds"
+    - "calibration_by_group"
+  protected_attributes:
+    - "age_group"
+    - "gender"
+    - "ethnicity"
+    - "disability_status"
+
+# Monitoring settings
+monitoring:
+  # Prometheus
+  prometheus_enabled: true
+  prometheus_port: 9092
+  prometheus_path: "/metrics"
+  
+  # Tracing
+  tracing_enabled: true
+  jaeger_endpoint: "http://jaeger:14268/api/traces"
+  sample_rate: 0.1
+  
+  # Logging
+  log_level: "INFO"
+  log_format: "json"
+  log_file: "/app/logs/wohnfair-ml.log"
+
+# MLflow settings
+mlflow:
+  enabled: true
+  tracking_uri: "http://mlflow:5000"
+  experiment_name: "wohnfair-housing"
+  artifact_location: "/app/artifacts"
+  
+  # Model registry
+  registry_enabled: true
+  registry_uri: null
+  
+  # Auto-logging
+  autolog: true
+  log_models: true
+  log_artifacts: true
+
+# Feature engineering settings
+features:
+  # Categorical encoding
+  categorical_encoding: "target"
+  handle_unknown: "ignore"
+  
+  # Numerical features
+  numerical_scaling: "robust"
+  handle_outliers: "iqr"
+  
+  # Missing values
+  missing_strategy: "impute"
+  categorical_imputer: "mode"
+  numerical_imputer: "median"
+  
+  # Feature selection
+  feature_selection: true
+  selection_method: "mutual_info"
+  n_features: 50
+
+# Data preprocessing settings
+preprocessing:
+  # Data cleaning
+  remove_duplicates: true
+  handle_inconsistent_data: true
+  
+  # Data validation
+  validate_schema: true
+  check_data_quality: true
+  
+  # Data augmentation
+  augmentation_enabled: false
+  augmentation_methods: []
+  
+  # Data versioning
+  version_data: true
+  data_version_format: "v{major}.{minor}.{patch}"
+
+# Model serving settings
+serving:
+  # API settings
+  api_host: "0.0.0.0"
+  api_port: 8000
+  api_workers: 4
+  
+  # Model loading
+  model_cache_size: 10
+  model_reload_interval: 300
+  
+  # Prediction settings
+  batch_size: 100
+  timeout: 30
+  
+  # A/B testing
+  ab_testing_enabled: false
+  traffic_split: 0.5
+
+# Security settings
+security:
+  # Authentication
+  auth_enabled: false
+  auth_method: "jwt"
+  
+  # Rate limiting
+  rate_limit_enabled: true
+  rate_limit_requests: 100
+  rate_limit_window: 60
+  
+  # Input validation
+  validate_inputs: true
+  max_input_size: 1048576  # 1MB
+  
+  # Model access control
+  model_access_control: false
+  allowed_models: []
+
+# Performance settings
+performance:
+  # Caching
+  cache_enabled: true
+  cache_ttl: 3600
+  cache_max_size: 1000
+  
+  # Parallel processing
+  parallel_processing: true
+  max_workers: 8
+  
+  # Memory management
+  memory_limit: "4GB"
+  gc_threshold: 0.8
+  
+  # Model optimization
+  model_optimization: true
+  quantization: false
+  pruning: false
+
+# Development settings
+development:
+  # Debug mode
+  debug: false
+  
+  # Hot reload
+  hot_reload: false
+  
+  # Profiling
+  profiling_enabled: false
+  profiling_output: "/app/logs/profiling"
+  
+  # Testing
+  test_data_size: 1000
+  mock_models: false
+  
+  # Documentation
+  auto_docs: true
+  docs_path: "/app/docs"

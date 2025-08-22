@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package wohnfair.common.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/wohnfair/wohnfair/services/gen/wohnfair/common/v1;commonv1";
+
+// Common identifier types
+message UUID {
+  string value = 1;
+}
+
+message TicketID {
+  string value = 1;
+}
+
+message ReservationID {
+  string value = 1;
+}
+
+message UserID {
+  string value = 1;
+}
+
+message PropertyID {
+  string value = 1;
+}
+
+// Geographic location
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+  string city = 3;
+  string postal_code = 4;
+  string country = 5;
+}
+
+// Address information
+message Address {
+  string street = 1;
+  string house_number = 2;
+  string postal_code = 3;
+  string city = 4;
+  string state = 5;
+  string country = 6;
+}
+
+// User groups for fairness calculations
+enum UserGroup {
+  USER_GROUP_UNSPECIFIED = 0;
+  USER_GROUP_STUDENT = 1;
+  USER_GROUP_SENIOR = 2;
+  USER_GROUP_FAMILY = 3;
+  USER_GROUP_SINGLE = 4;
+  USER_GROUP_DISABLED = 5;
+  USER_GROUP_REFUGEE = 6;
+  USER_GROUP_LOW_INCOME = 7;
+  USER_GROUP_MIDDLE_INCOME = 8;
+  USER_GROUP_HIGH_INCOME = 9;
+}
+
+// Urgency levels for housing needs
+enum UrgencyLevel {
+  URGENCY_LEVEL_UNSPECIFIED = 0;
+  URGENCY_LEVEL_LOW = 1;
+  URGENCY_LEVEL_MEDIUM = 2;
+  URGENCY_LEVEL_HIGH = 3;
+  URGENCY_LEVEL_CRITICAL = 4;
+  URGENCY_LEVEL_EMERGENCY = 5;
+}
+
+// Property types
+enum PropertyType {
+  PROPERTY_TYPE_UNSPECIFIED = 0;
+  PROPERTY_TYPE_APARTMENT = 1;
+  PROPERTY_TYPE_HOUSE = 2;
+  PROPERTY_TYPE_STUDIO = 3;
+  PROPERTY_TYPE_SHARED_ROOM = 4;
+  PROPERTY_TYPE_SENIOR_HOUSING = 5;
+  PROPERTY_TYPE_ACCESSIBLE_HOUSING = 6;
+}
+
+// Lease duration options
+enum LeaseDuration {
+  LEASE_DURATION_UNSPECIFIED = 0;
+  LEASE_DURATION_TEMPORARY = 1;
+  LEASE_DURATION_6_MONTHS = 2;
+  LEASE_DURATION_1_YEAR = 3;
+  LEASE_DURATION_2_YEARS = 4;
+  LEASE_DURATION_5_YEARS = 5;
+  LEASE_DURATION_10_YEARS = 6;
+  LEASE_DURATION_PERMANENT = 7;
+}
+
+// Financial constraints
+message FinancialConstraints {
+  double max_monthly_rent = 1;
+  double max_deposit = 2;
+  double min_income_requirement = 3;
+  bool accepts_housing_allowance = 4;
+  bool accepts_rent_control = 5;
+}
+
+// Accessibility requirements
+message AccessibilityRequirements {
+  bool wheelchair_accessible = 1;
+  bool elevator_required = 2;
+  bool ground_floor_only = 3;
+  bool hearing_loop = 4;
+  bool visual_alerts = 5;
+  bool service_animal_friendly = 6;
+}
+
+// Time-related types
+message TimeWindow {
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+  google.protobuf.Duration duration = 3;
+}
+
+message SchedulingHorizon {
+  google.protobuf.Duration look_ahead = 1;
+  google.protobuf.Timestamp reference_time = 2;
+}
+
+// Status enums
+enum RequestStatus {
+  REQUEST_STATUS_UNSPECIFIED = 0;
+  REQUEST_STATUS_PENDING = 1;
+  REQUEST_STATUS_APPROVED = 2;
+  REQUEST_STATUS_REJECTED = 3;
+  REQUEST_STATUS_CANCELLED = 4;
+  REQUEST_STATUS_EXPIRED = 5;
+}
+
+enum AllocationStatus {
+  ALLOCATION_STATUS_UNSPECIFIED = 0;
+  ALLOCATION_STATUS_QUEUED = 1;
+  ALLOCATION_STATUS_SCHEDULED = 2;
+  ALLOCATION_STATUS_ALLOCATED = 3;
+  ALLOCATION_STATUS_REJECTED = 4;
+  ALLOCATION_STATUS_EXPIRED = 5;
+}
+
+// Metadata for tracking and auditing
+message Metadata {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  UserID created_by = 3;
+  UserID updated_by = 4;
+  string version = 5;
+  map<string, string> tags = 6;
+}
+
+// Pagination support
+message PaginationRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message PaginationResponse {
+  int32 total_size = 1;
+  string next_page_token = 2;
+  bool has_more = 3;
+}
+
+// Error details
+message ErrorDetail {
+  string code = 1;
+  string message = 2;
+  string field = 3;
+  map<string, string> metadata = 4;
+}
+
+// Validation errors
+message ValidationError {
+  repeated ErrorDetail errors = 1;
+}
+
+// Success response wrapper
+message SuccessResponse {
+  bool success = 1;
+  string message = 2;
+  Metadata metadata = 3;
+}
+
+// Health check response
+message HealthResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_SERVING = 1;
+    STATUS_NOT_SERVING = 2;
+    STATUS_SERVICE_UNKNOWN = 3;
+  }
+  
+  Status status = 1;
+  string message = 2;
+  map<string, string> details = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}

@@ -1,0 +1,190 @@
+syntax = "proto3";
+
+package wohnfair.zklease.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "wohnfair/common/v1/types.proto";
+
+option go_package = "github.com/wohnfair/wohnfair/services/gen/wohnfair/zklease/v1;zkleasev1";
+
+// ZK-Lease service provides zero-knowledge proof verification for housing reservations
+service ZKLeaseService {
+  // ProveReservation generates a zero-knowledge proof for a reservation
+  rpc ProveReservation(ProveReservationRequest) returns (ProveReservationResponse);
+  
+  // VerifyReservation verifies a zero-knowledge proof
+  rpc VerifyReservation(VerifyReservationRequest) returns (VerifyReservationResponse);
+  
+  // GenerateProofParameters creates new proof parameters
+  rpc GenerateProofParameters(GenerateProofParametersRequest) returns (GenerateProofParametersResponse);
+  
+  // GetProofStatus returns the status of a proof generation
+  rpc GetProofStatus(GetProofStatusRequest) returns (GetProofStatusResponse);
+  
+  // Health check endpoint
+  rpc Health(google.protobuf.Empty) returns (wohnfair.common.v1.HealthResponse);
+}
+
+// ProveReservationRequest contains data for proof generation
+message ProveReservationRequest {
+  // Reservation details
+  wohnfair.common.v1.ReservationID reservation_id = 1;
+  wohnfair.common.v1.UserID user_id = 2;
+  wohnfair.common.v1.PropertyID property_id = 3;
+  
+  // Device binding for non-transferability
+  string device_pubkey = 4;
+  string device_signature = 5;
+  
+  // Reservation constraints
+  wohnfair.common.v1.LeaseDuration lease_duration = 6;
+  google.protobuf.Timestamp start_date = 7;
+  google.protobuf.Timestamp end_date = 8;
+  
+  // Financial commitment
+  double monthly_rent = 9;
+  double deposit_amount = 10;
+  string payment_method_hash = 11; // Hash of payment method for privacy
+  
+  // Eligibility proof (without revealing personal data)
+  string eligibility_proof_hash = 12;
+  string income_verification_hash = 13;
+  string credit_check_hash = 14;
+  
+  // Additional constraints
+  map<string, string> constraint_hashes = 15;
+  
+  // Metadata
+  wohnfair.common.v1.Metadata metadata = 16;
+}
+
+// ProveReservationResponse contains the generated proof
+message ProveReservationResponse {
+  wohnfair.common.v1.ReservationID reservation_id = 1;
+  string proof_id = 2;
+  bytes proof_bytes = 3;
+  string public_inputs_hash = 4;
+  google.protobuf.Timestamp proof_generated_at = 5;
+  ProofStatus status = 6;
+  wohnfair.common.v1.Metadata metadata = 7;
+}
+
+// VerifyReservationRequest contains proof for verification
+message VerifyReservationRequest {
+  string proof_id = 1;
+  bytes proof_bytes = 2;
+  string public_inputs_hash = 3;
+  wohnfair.common.v1.ReservationID reservation_id = 4;
+  
+  // Verification context
+  string verification_context = 5;
+  map<string, string> verification_parameters = 6;
+}
+
+// VerifyReservationResponse contains verification results
+message VerifyReservationResponse {
+  string proof_id = 1;
+  bool verification_ok = 2;
+  repeated VerificationDetail verification_details = 3;
+  google.protobuf.Timestamp verified_at = 4;
+  wohnfair.common.v1.Metadata metadata = 5;
+}
+
+// GenerateProofParametersRequest for new proof system setup
+message GenerateProofParametersRequest {
+  // Proof system configuration
+  ProofSystem proof_system = 1;
+  int32 security_level = 2; // bits of security
+  map<string, string> custom_parameters = 3;
+}
+
+// GenerateProofParametersResponse contains generated parameters
+message GenerateProofParametersResponse {
+  string parameter_set_id = 1;
+  bytes proving_key = 2;
+  bytes verification_key = 3;
+  ProofSystem proof_system = 4;
+  int32 security_level = 5;
+  google.protobuf.Timestamp generated_at = 6;
+  wohnfair.common.v1.Metadata metadata = 7;
+}
+
+// GetProofStatusRequest queries proof generation status
+message GetProofStatusRequest {
+  string proof_id = 1;
+}
+
+// GetProofStatusResponse contains proof status
+message GetProofStatusResponse {
+  string proof_id = 1;
+  ProofStatus status = 2;
+  double progress_percentage = 3;
+  string status_message = 4;
+  google.protobuf.Timestamp last_updated = 5;
+  google.protobuf.Timestamp estimated_completion = 6;
+}
+
+// ProofStatus represents the current state of proof generation
+enum ProofStatus {
+  PROOF_STATUS_UNSPECIFIED = 0;
+  PROOF_STATUS_PENDING = 1;
+  PROOF_STATUS_GENERATING = 2;
+  PROOF_STATUS_COMPLETED = 3;
+  PROOF_STATUS_FAILED = 4;
+  PROOF_STATUS_EXPIRED = 5;
+  PROOF_STATUS_VERIFIED = 6;
+  PROOF_STATUS_REJECTED = 7;
+}
+
+// ProofSystem specifies the zero-knowledge proof system
+enum ProofSystem {
+  PROOF_SYSTEM_UNSPECIFIED = 0;
+  PROOF_SYSTEM_HALO2 = 1;
+  PROOF_SYSTEM_PLONK = 2;
+  PROOF_SYSTEM_GROTH16 = 3;
+  PROOF_SYSTEM_MARLIN = 4;
+  PROOF_SYSTEM_SONIC = 5;
+}
+
+// VerificationDetail provides specific verification results
+message VerificationDetail {
+  string check_name = 1;
+  bool passed = 2;
+  string details = 3;
+  double confidence_score = 4;
+  repeated string warnings = 5;
+}
+
+// ProofMetadata contains additional proof information
+message ProofMetadata {
+  string proof_system = 1;
+  string circuit_hash = 2;
+  int32 constraint_count = 3;
+  int32 variable_count = 4;
+  double proving_time_seconds = 5;
+  double verification_time_seconds = 6;
+  string prover_version = 7;
+  string verifier_version = 8;
+}
+
+// CircuitConstraints defines the proof circuit structure
+message CircuitConstraints {
+  repeated string public_inputs = 1;
+  repeated string private_inputs = 2;
+  repeated string constraints = 3;
+  map<string, string> custom_gates = 4;
+  int32 field_size_bits = 5;
+  string curve_name = 6;
+}
+
+// ProofVerificationContext provides verification parameters
+message ProofVerificationContext {
+  string context_id = 1;
+  string verification_policy = 2;
+  repeated string required_checks = 3;
+  map<string, double> threshold_values = 4;
+  google.protobuf.Timestamp valid_from = 5;
+  google.protobuf.Timestamp valid_until = 6;
+  wohnfair.common.v1.Metadata metadata = 7;
+}

@@ -1,0 +1,77 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'wohnfair-gateway'
+    static_configs:
+      - targets: ['gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'wohnfair-fairrent'
+    static_configs:
+      - targets: ['fairrent:50051']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'wohnfair-zk-lease'
+    static_configs:
+      - targets: ['zk-lease:50052']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'wohnfair-ml'
+    static_configs:
+      - targets: ['ml:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'wohnfair-notifier'
+    static_configs:
+      - targets: ['notifier:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'clickhouse'
+    static_configs:
+      - targets: ['clickhouse:8123']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'minio'
+    static_configs:
+      - targets: ['minio:9000']
+    metrics_path: '/minio/v2/metrics/cluster'
+    scrape_interval: 30s

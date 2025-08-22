@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "WohnFair System Dashboard",
+    "tags": ["wohnfair", "housing", "fairness"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {"id":1,"title":"System Overview","type":"stat","targets":[{"expr":"up{job=~\"wohnfair.*\"}","legendFormat":"{{job}}"}]},
+      {"id":2,"title":"Request Queue Status","type":"timeseries","targets":[{"expr":"wohnfair_requests_total","legendFormat":"Total Requests"},{"expr":"wohnfair_requests_pending","legendFormat":"Pending Requests"}]},
+      {"id":3,"title":"Fairness Metrics","type":"gauge","targets":[{"expr":"wohnfair_fairness_score","legendFormat":"Fairness Score"}]},
+      {"id":4,"title":"Response Times","type":"histogram","targets":[{"expr":"rate(wohnfair_request_duration_seconds_bucket[5m])","legendFormat":"Response Time"}]}
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "10s"
+  }
+}

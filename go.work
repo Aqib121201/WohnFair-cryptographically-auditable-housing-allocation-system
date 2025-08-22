@@ -1,0 +1,23 @@
+go 1.21
+
+use (
+	./services/orchestration
+	./services/fairrent
+	./services/policy-dsl
+	./services/notifications
+)
+
+# WohnFair Monorepo Workspace
+# This workspace includes all Go services for the housing allocation system
+#
+# Services:
+# - orchestration: Main gateway and orchestration service
+# - fairrent: α-fair scheduling algorithm implementation
+# - policy-dsl: Policy domain-specific language compiler
+# - notifications: Email, SMS, and push notification service
+#
+# To add a new service:
+# 1. Create the service directory under services/
+# 2. Initialize with go mod init
+# 3. Add the service to this workspace with use (./services/service-name)
+# 4. Run go work sync to update dependencies

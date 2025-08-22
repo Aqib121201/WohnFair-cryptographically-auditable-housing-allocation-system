@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+package wohnfair.fairrent.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "wohnfair/common/v1/types.proto";
+
+option go_package = "github.com/wohnfair/wohnfair/services/gen/wohnfair/fairrent/v1;fairrentv1";
+
+// FairRent service implements α-fair scheduling for housing allocation
+service FairRentService {
+  // Enqueue adds a new housing request to the queue
+  rpc Enqueue(EnqueueRequest) returns (EnqueueResponse);
+  
+  // ScheduleNext processes the next allocation from the queue
+  rpc ScheduleNext(ScheduleNextRequest) returns (ScheduleNextResponse);
+  
+  // PeekPosition returns the current position and estimated wait time
+  rpc PeekPosition(PeekPositionRequest) returns (PeekPositionResponse);
+  
+  // GetMetrics returns fairness and performance metrics
+  rpc GetMetrics(google.protobuf.Empty) returns (FairnessMetrics);
+  
+  // UpdateRequest modifies an existing request
+  rpc UpdateRequest(UpdateRequestRequest) returns (UpdateRequestResponse);
+  
+  // CancelRequest removes a request from the queue
+  rpc CancelRequest(CancelRequestRequest) returns (CancelRequestResponse);
+  
+  // GetQueueStatus returns current queue statistics
+  rpc GetQueueStatus(google.protobuf.Empty) returns (QueueStatus);
+  
+  // Health check endpoint
+  rpc Health(google.protobuf.Empty) returns (wohnfair.common.v1.HealthResponse);
+}
+
+// EnqueueRequest represents a new housing request
+message EnqueueRequest {
+  wohnfair.common.v1.UserID user_id = 1;
+  wohnfair.common.v1.UserGroup user_group = 2;
+  wohnfair.common.v1.UrgencyLevel urgency = 3;
+  
+  // Geographic preferences
+  repeated wohnfair.common.v1.Location preferred_locations = 4;
+  repeated string preferred_cities = 5;
+  repeated string preferred_postal_codes = 6;
+  
+  // Property preferences
+  repeated wohnfair.common.v1.PropertyType property_types = 7;
+  wohnfair.common.v1.LeaseDuration preferred_duration = 8;
+  
+  // Constraints
+  wohnfair.common.v1.FinancialConstraints financial_constraints = 9;
+  wohnfair.common.v1.AccessibilityRequirements accessibility_requirements = 10;
+  
+  // Additional preferences
+  int32 min_rooms = 11;
+  int32 max_roommates = 12;
+  bool pets_allowed = 13;
+  bool smoking_allowed = 14;
+  
+  // Priority factors (0.0 to 1.0)
+  double priority_score = 15;
+  
+  // Metadata
+  map<string, string> additional_preferences = 16;
+}
+
+// EnqueueResponse contains the ticket information
+message EnqueueResponse {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  wohnfair.common.v1.AllocationStatus status = 2;
+  int32 queue_position = 3;
+  google.protobuf.Timestamp estimated_allocation_time = 4;
+  wohnfair.common.v1.Metadata metadata = 5;
+}
+
+// ScheduleNextRequest specifies the scheduling horizon
+message ScheduleNextRequest {
+  wohnfair.common.v1.SchedulingHorizon horizon = 1;
+  repeated wohnfair.common.v1.PropertyID available_properties = 2;
+  map<string, double> group_weights = 3; // α-fairness parameters
+}
+
+// ScheduleNextResponse contains the next allocation
+message ScheduleNextResponse {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  wohnfair.common.v1.PropertyID allocated_property = 2;
+  wohnfair.common.v1.UserID user_id = 3;
+  google.protobuf.Timestamp allocation_time = 4;
+  double fairness_score = 5;
+  wohnfair.common.v1.Metadata metadata = 6;
+}
+
+// PeekPositionRequest queries queue position
+message PeekPositionRequest {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+}
+
+// PeekPositionResponse contains position information
+message PeekPositionResponse {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  int32 current_position = 2;
+  int32 total_in_queue = 3;
+  google.protobuf.Duration estimated_wait_time = 4;
+  google.protobuf.Timestamp estimated_allocation_time = 5;
+  double fairness_score = 6;
+  wohnfair.common.v1.AllocationStatus status = 7;
+}
+
+// UpdateRequestRequest modifies an existing request
+message UpdateRequestRequest {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  wohnfair.common.v1.UrgencyLevel new_urgency = 2;
+  repeated wohnfair.common.v1.Location new_preferred_locations = 3;
+  wohnfair.common.v1.FinancialConstraints new_financial_constraints = 4;
+  map<string, string> new_additional_preferences = 5;
+}
+
+// UpdateRequestResponse confirms the update
+message UpdateRequestResponse {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  bool updated = 2;
+  int32 new_queue_position = 3;
+  google.protobuf.Timestamp new_estimated_allocation_time = 4;
+  wohnfair.common.v1.Metadata metadata = 5;
+}
+
+// CancelRequestRequest removes a request
+message CancelRequestRequest {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  string reason = 2;
+}
+
+// CancelRequestResponse confirms cancellation
+message CancelRequestResponse {
+  wohnfair.common.v1.TicketID ticket_id = 1;
+  bool cancelled = 2;
+  google.protobuf.Timestamp cancellation_time = 3;
+  wohnfair.common.v1.Metadata metadata = 4;
+}
+
+// FairnessMetrics provides comprehensive fairness analysis
+message FairnessMetrics {
+  // α-fairness parameters
+  double alpha = 1;
+  map<string, double> group_weights = 2;
+  
+  // Queue statistics
+  int32 total_requests = 3;
+  int32 total_allocations = 4;
+  int32 active_requests = 5;
+  
+  // Wait time metrics
+  google.protobuf.Duration average_wait_time = 6;
+  google.protobuf.Duration median_wait_time = 7;
+  google.protobuf.Duration p95_wait_time = 8;
+  google.protobuf.Duration p99_wait_time = 9;
+  google.protobuf.Duration max_wait_time = 10;
+  
+  // Group fairness metrics
+  repeated GroupFairnessMetrics group_metrics = 11;
+  
+  // Starvation prevention metrics
+  double max_wait_time_ratio = 12; // max_wait / min_wait
+  double gini_coefficient = 13; // Wait time inequality
+  
+  // Performance metrics
+  double allocation_rate = 14; // allocations per hour
+  double queue_turnover_rate = 15; // requests processed per hour
+  
+  // Timestamp
+  google.protobuf.Timestamp calculated_at = 16;
+}
+
+// GroupFairnessMetrics tracks fairness per user group
+message GroupFairnessMetrics {
+  wohnfair.common.v1.UserGroup user_group = 1;
+  int32 requests_count = 2;
+  int32 allocations_count = 3;
+  double allocation_rate = 4;
+  google.protobuf.Duration average_wait_time = 5;
+  double fairness_score = 6;
+  double target_allocation_rate = 7;
+  double actual_vs_target_ratio = 8;
+}
+
+// QueueStatus provides current queue information
+message QueueStatus {
+  int32 total_requests = 1;
+  int32 pending_requests = 2;
+  int32 processing_requests = 3;
+  int32 completed_requests = 4;
+  
+  // Per-group counts
+  map<string, int32> group_counts = 5;
+  
+  // Per-urgency counts
+  map<string, int32> urgency_counts = 6;
+  
+  // Estimated processing times
+  google.protobuf.Duration estimated_completion_time = 7;
+  double queue_efficiency = 8;
+  
+  // Timestamp
+  google.protobuf.Timestamp status_at = 9;
+}

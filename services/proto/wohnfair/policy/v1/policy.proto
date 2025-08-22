@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+package wohnfair.policy.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "wohnfair/common/v1/types.proto";
+
+option go_package = "github.com/wohnfair/wohnfair/services/gen/wohnfair/policy/v1;policyv1";
+
+// Policy service provides domain-specific language for housing allocation policies
+service PolicyService {
+  // ValidateEligibility checks if an applicant meets policy requirements
+  rpc ValidateEligibility(ValidateEligibilityRequest) returns (ValidateEligibilityResponse);
+  
+  // EvaluateQuota determines if allocation quotas are met
+  rpc EvaluateQuota(EvaluateQuotaRequest) returns (EvaluateQuotaResponse);
+  
+  // CompilePolicy compiles a policy from YAML/DSL to executable form
+  rpc CompilePolicy(CompilePolicyRequest) returns (CompilePolicyResponse);
+  
+  // GetPolicyVersion returns the current policy version and metadata
+  rpc GetPolicyVersion(google.protobuf.Empty) returns (PolicyVersion);
+  
+  // Health check endpoint
+  rpc Health(google.protobuf.Empty) returns (wohnfair.common.v1.HealthResponse);
+}
+
+// ValidateEligibilityRequest contains applicant information for validation
+message ValidateEligibilityRequest {
+  wohnfair.common.v1.UserID user_id = 1;
+  
+  // Personal information (hashed for privacy)
+  string age_hash = 2;
+  string income_hash = 3;
+  string employment_hash = 4;
+  string citizenship_hash = 5;
+  string criminal_record_hash = 6;
+  
+  // Housing history
+  repeated HousingHistoryEntry housing_history = 7;
+  
+  // Current situation
+  CurrentHousingSituation current_situation = 8;
+  
+  // Special circumstances
+  repeated SpecialCircumstance special_circumstances = 9;
+  
+  // Policy context
+  string policy_version = 10;
+  string city_code = 11;
+  string district_code = 12;
+  
+  // Metadata
+  wohnfair.common.v1.Metadata metadata = 13;
+}
+
+// ValidateEligibilityResponse contains validation results
+message ValidateEligibilityResponse {
+  wohnfair.common.v1.UserID user_id = 1;
+  bool eligible = 2;
+  double eligibility_score = 3;
+  repeated ValidationRuleResult rule_results = 4;
+  repeated string warnings = 5;
+  repeated string recommendations = 6;
+  wohnfair.common.v1.Metadata metadata = 7;
+}
+
+// EvaluateQuotaRequest checks allocation quotas
+message EvaluateQuotaRequest {
+  string quota_name = 1;
+  string city_code = 2;
+  string district_code = 3;
+  wohnfair.common.v1.UserGroup user_group = 4;
+  
+  // Current allocation counts
+  map<string, int32> current_allocations = 5;
+  map<string, int32> pending_requests = 6;
+  
+  // Quota parameters
+  map<string, double> quota_parameters = 7;
+  
+  // Policy context
+  string policy_version = 8;
+  google.protobuf.Timestamp evaluation_time = 9;
+}
+
+// EvaluateQuotaResponse contains quota evaluation results
+message EvaluateQuotaResponse {
+  string quota_name = 1;
+  bool quota_available = 2;
+  double availability_percentage = 3;
+  int32 remaining_slots = 4;
+  repeated QuotaRuleResult rule_results = 5;
+  google.protobuf.Timestamp next_review_time = 6;
+  wohnfair.common.v1.Metadata metadata = 7;
+}
+
+// CompilePolicyRequest compiles a policy definition
+message CompilePolicyRequest {
+  string policy_source = 1; // YAML or DSL source
+  string policy_format = 2; // "yaml", "dsl", "json"
+  string target_language = 3; // "rego", "wasm", "native"
+  
+  // Compilation options
+  map<string, string> compilation_options = 4;
+  bool validate_only = 5;
+  bool generate_tests = 6;
+}
+
+// CompilePolicyResponse contains compilation results
+message CompilePolicyResponse {
+  string policy_id = 1;
+  bool compilation_successful = 2;
+  bytes compiled_policy = 3;
+  string policy_hash = 4;
+  repeated CompilationMessage messages = 5;
+  PolicyMetadata metadata = 6;
+}
+
+// GetPolicyVersionResponse contains policy version information
+message PolicyVersion {
+  string version = 1;
+  string description = 2;
+  google.protobuf.Timestamp effective_date = 3;
+  google.protobuf.Timestamp expiry_date = 4;
+  repeated string cities = 5;
+  repeated string districts = 6;
+  repeated string user_groups = 7;
+  wohnfair.common.v1.Metadata metadata = 8;
+}
+
+// HousingHistoryEntry represents past housing situations
+message HousingHistoryEntry {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+  string address_hash = 3;
+  wohnfair.common.v1.PropertyType property_type = 4;
+  double monthly_rent = 5;
+  string termination_reason_hash = 6;
+  bool eviction = 7;
+  bool rent_arrears = 8;
+}
+
+// CurrentHousingSituation describes applicant's current housing
+message CurrentHousingSituation {
+  bool currently_housed = 1;
+  string current_address_hash = 2;
+  wohnfair.common.v1.PropertyType current_property_type = 3;
+  double current_monthly_rent = 4;
+  bool at_risk_of_homelessness = 5;
+  google.protobuf.Timestamp homelessness_risk_date = 6;
+  string risk_factors_hash = 7;
+}
+
+// SpecialCircumstance represents special considerations
+message SpecialCircumstance {
+  string circumstance_type = 1;
+  string description_hash = 2;
+  double severity_score = 3;
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+  bool documented = 6;
+  string documentation_hash = 7;
+}
+
+// ValidationRuleResult contains individual rule validation results
+message ValidationRuleResult {
+  string rule_name = 1;
+  string rule_description = 2;
+  bool passed = 3;
+  double score = 4;
+  string reason = 5;
+  repeated string evidence = 6;
+  map<string, string> rule_metadata = 7;
+}
+
+// QuotaRuleResult contains quota rule evaluation results
+message QuotaRuleResult {
+  string rule_name = 1;
+  string rule_description = 2;
+  bool passed = 3;
+  double current_value = 4;
+  double threshold_value = 5;
+  double remaining_capacity = 6;
+  string status = 7;
+}
+
+// CompilationMessage contains compilation feedback
+message CompilationMessage {
+  enum Level {
+    LEVEL_UNSPECIFIED = 0;
+    LEVEL_INFO = 1;
+    LEVEL_WARNING = 2;
+    LEVEL_ERROR = 3;
+  }
+  
+  Level level = 1;
+  string message = 2;
+  int32 line_number = 3;
+  int32 column_number = 4;
+  string file_name = 5;
+  string suggestion = 6;
+}
+
+// PolicyMetadata contains policy compilation information
+message PolicyMetadata {
+  string policy_name = 1;
+  string policy_version = 2;
+  string author = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp last_modified = 5;
+  
+  // Compilation details
+  string target_language = 6;
+  string compiler_version = 7;
+  int32 rule_count = 8;
+  int32 function_count = 9;
+  
+  // Performance metrics
+  double compilation_time_seconds = 10;
+  int64 compiled_size_bytes = 11;
+  
+  // Validation results
+  bool validation_passed = 12;
+  repeated string validation_errors = 13;
+  repeated string validation_warnings = 14;
+}

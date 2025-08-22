@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources: []
+
+providers:
+  - name: 'wohnfair-dashboards'
+    orgId: 1
+    folder: 'WohnFair'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true
