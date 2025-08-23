@@ -1,0 +1,7 @@
+{
+  "exp": "fairsurvival",
+  "c_index_mean": 0.852,
+  "ci95": [0.832, 0.872],
+  "equal_opportunity_gap": 0.048,
+  "hardware": "RTX 3090 24GB VRAM"
+}

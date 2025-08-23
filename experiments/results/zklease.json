@@ -1,0 +1,8 @@
+{
+  "exp": "zklease",
+  "n": 1000,
+  "proof_size_kb": 22.5,
+  "prove_time_s": 0.91,
+  "verify_time_ms": 7.8,
+  "hardware": "Intel i7-12700K, 32GB RAM"
+}

@@ -1,0 +1,11 @@
+{
+  "exp": "fairrent",
+  "alpha": 0.7,
+  "n": 50000,
+  "m": 12000,
+  "metric": "clearance_time",
+  "value": 114.2,
+  "ci95": [111.1, 117.3],
+  "seed": 42,
+  "hardware": "Intel Xeon E5-2680v4, 128GB RAM"
+}
